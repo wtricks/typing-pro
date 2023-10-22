@@ -41,7 +41,7 @@ export default function Profile() {
                     <h2>{user.name}</h2>
                     <p>{user.email}</p>
                     <p>Passowrd: {user.password}</p>
-                    <p>Login At: {user.loginAt}</p>
+                    <p>Login At: {new Date(user.loginAt).toLocaleString()}</p>
                     <p>Registred At: {new Date(user.createdAt).toUTCString()}</p>
                 </div>
                 <div className="inner rp card">
