@@ -191,7 +191,7 @@ export default function Home() {
                         />
                     </div>
 
-                    <h3>Set time (in seconds)</h3>
+                    <h3>Set number of words</h3>
                     <div className="row">
                         <button onClick={() => setConfigs(-1, 10)} className={config[1] == 10 ? 'active' : ''} type="button">
                             10
