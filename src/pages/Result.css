@@ -1,0 +1,31 @@
+.rps {
+    align-items: center;
+}
+
+.rps h2 {
+    font-size: 3rem;
+    color: var(--text-color);
+    margin: 0;
+    margin-bottom: 1rem;
+}
+
+.rps h3 {
+    color: var(--text-color);
+    font-size: 1.3rem;
+    margin: 0;
+}
+
+.rps p {
+    color: var(--primary);
+    margin: 0;
+    font-size: 1.3rem;
+    margin-bottom: 2rem;
+}
+
+.rps button {
+    width: 90%;
+}
+
+.rps .save {
+    margin-top: 0.4rem;
+}

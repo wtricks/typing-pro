@@ -1,0 +1,91 @@
+.lp input {
+    position: absolute;
+    top: -100%;
+}
+
+.lp span {
+    font-size: 1.5rem;
+    color: var(--text-color);
+    align-items: center;
+    opacity: 0.8;
+    border-left: 1px solid transparent;
+}
+
+.lp span.wrong {
+    color: #f25353;
+}
+
+.lp span.right {
+    color: var(--primary);
+}
+
+.lp span.space {
+    width: 10px;
+    height: 18px;
+    display: inline-block;
+}
+
+.lp span.space.wrong {
+    background-color: #f25353;
+}
+
+.lp span.cursor {
+    border-color: #fff;
+    animation: 2s ease 0s infinite normal none running blinking;
+}
+
+@keyframes blinking {
+    0% {
+        border-color: var(--text-color)
+    }
+
+    25% {
+        border-color: var(--card);
+    }
+
+    50% {
+        border-color: var(--text-color);
+    }
+
+    75% {
+        border-color: var(--card);
+    }
+}
+
+.rp .timer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    font-size: 3.5rem;
+    color: var(--text-color)
+}
+
+.rp h3 {
+    font-size: 1rem;
+    margin-top: 0;
+    color: var(--text-color);
+    margin-top: 2rem;
+}
+
+.rp .row {
+    display: flex;
+    align-items: center;
+}
+
+.rp button {
+    margin-right: 0.4rem;
+    padding: 0.6em 0.9em;
+}
+
+.rp .full:nth-of-type(1) {
+    margin-top: 2rem;
+}
+
+.rp .full {
+    width: 100%;
+    margin-top: 0.4rem;
+}
+
+.rp input {
+    width: 100%;
+}
