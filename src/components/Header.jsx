@@ -1,27 +1,21 @@
-import { useEffect, useState } from 'react'
-import { useAuth } from '../contexts/AuthContext'
-import { useAlert } from '../contexts/AlertContext'
+import { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { getDataFromLocalStorage, setDataToLocalStorage } from '../utils'
-
+import { setTheme } from '../store/Theme'
+import { signOut } from '../store/Auth'
+import { alert } from '../store/Alert'
 
 export default function Header() {
     const navigate = useNavigate()
     const location = useLocation()
-    const { user, logoutUser } = useAuth()
-    const [theme, setTheme] = useState(() => {
-        return getDataFromLocalStorage('theme', 'light')
-    })
-
-    const show = useAlert()
+    const dispatch = useDispatch()
+    const user = useSelector((state) => state.auth)
+    const theme = useSelector((state) => state.theme)
 
     useEffect(() => {
-        document.body.classList.remove(theme == 'dark' ? 'light' : 'dark')
+        console.log(user)
         document.body.classList.add(theme)
-        setDataToLocalStorage('theme', theme)
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [theme])
+    }, [])
 
     const onProfileButtonClick = () => {
         const page = user ? '/profile' : '/auth'
@@ -33,14 +27,14 @@ export default function Header() {
     }
 
     const onThemeButtonCLick = () => {
-        setTheme(theme == 'light' ? 'dark' : 'light')
-        show((theme == 'light' ? 'dark' : 'light') + ' mode')
+        dispatch(setTheme(theme == 'light' ? 'dark' : 'light'))
+        dispatch(alert((theme == 'light' ? 'dark' : 'light') + ' mode'))
     }
 
     const onLogout = () => {
-        logoutUser()
+        dispatch(signOut())
         navigate('/', { replace: true })
-        show('Logout successfully!')
+        dispatch(alert('Logout successfully!'))
     }
 
     return (

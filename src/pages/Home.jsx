@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { generate } from 'random-words'
+import { useDispatch } from "react-redux";
 import { useNavigate } from 'react-router-dom'
-
-import "./Home.css"
-import { getDataFromLocalStorage, setDataToLocalStorage } from "../utils";
+import { setHistory } from '../store/History'
 import Header from '../components/Header'
+import "./Home.css"
 
 export default function Home() {
+    const dispatch = useDispatch()
     const navigate = useNavigate()
 
     const [config, setConfig] = useState([60, 50])
@@ -120,17 +121,15 @@ export default function Home() {
         let totalChar = dummyText.current.length;
 
         const dataId = new Date().getTime();
-        const history = getDataFromLocalStorage('history', [])
-        history.push({
+
+        dispatch(setHistory({
             graph: graph.current,
             totalCorrectChar,
             totalInCorrectChar,
             totalChar,
             taken: config[0],
             time: dataId
-        })
-
-        setDataToLocalStorage('history', history)
+        }))
         navigate("/result?time=" + dataId)
     }
 

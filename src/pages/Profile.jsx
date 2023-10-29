@@ -1,20 +1,18 @@
 import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useLocation, useNavigate } from 'react-router-dom'
+
+import { alert } from '../store/Alert'
 import Header from '../components/Header'
 import './Profile.css'
-import { useAuth } from '../contexts/AuthContext'
-import { useAlert } from '../contexts/AlertContext'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { getDataFromLocalStorage } from '../utils'
 
 export default function Profile() {
-    const show = useAlert()
+    const dispatch = useDispatch()
     const history = useLocation()
     const navigate = useNavigate()
-    const { user } = useAuth()
 
-    const [dataHistory] = useState(() => {
-        return getDataFromLocalStorage('history', [])
-    })
+    const user = useSelector(state => state.auth)
+    const dataHistory = useSelector(state => state.history)
 
     useEffect(() => {
         if (!user) {
@@ -24,7 +22,7 @@ export default function Profile() {
                 navigate('/', { replace: true })
             }
 
-            show('You need to login to your account.')
+            dispatch(alert('You need to login to your account.'))
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
