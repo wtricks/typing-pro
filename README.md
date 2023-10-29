@@ -9,7 +9,7 @@ git clone https://github.com/wtricks/typing-pro
 
 cd typing-pro
 
-# Install Dependecies
+# Install Dependencies
 pnpm install
 
 # Now we can run development server 
@@ -23,8 +23,11 @@ pnpm run dev
 - __React Router Dom__
 - __ChartJs__
 
-## See Demo
+# See Demo
 
 __[View Demo here](https://typing-pro-nine.vercel.app/)__
 
 # Demo Video
+
+https://github.com/wtricks/typing-pro/assets/101552403/4721119a-5fac-431c-8b1e-83a2bff2355b
+
