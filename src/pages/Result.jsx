@@ -1,28 +1,28 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
 
-import { useAlert } from '../contexts/AlertContext'
+import { alert } from '../store/Alert'
+import { store } from '../store'
+
 import Graph from '../components/Graph'
 import Header from '../components/Header'
-import {
-    getDataFromLocalStorage,
-    removeDataFromLocalStorage
-} from '../utils'
+
 import './Result.css'
 
 export default function Result() {
-    const show = useAlert()
+    const dispatch = useDispatch()
     const [search] = useSearchParams()
     const history = useLocation()
     const navigate = useNavigate()
 
     const [data] = useState(() => {
-        const dummy = getDataFromLocalStorage('history', []);
+        const dummy = store.getState().history
         const dataId = search.get('time');
         const index = dummy.findIndex(h => h.time == dataId);
 
         if (index == -1) {
-            show('Data with id `' + dataId + '` is not found.')
+            dispatch(alert('Data with id `' + dataId + '` is not found.'))
             return { graph: [] }
         }
 
@@ -37,8 +37,6 @@ export default function Result() {
                 navigate('/', { replace: true })
             }
         }
-
-        removeDataFromLocalStorage('result')
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 

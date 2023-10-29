@@ -1,24 +1,53 @@
-import { useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
+import { useDispatch, useSelector } from 'react-redux'
+import { remove } from "../store/Alert"
 
-// eslint-disable-next-line react/prop-types
-export default function Alert({ message, removeMessage, index }) {
-    const alertDiv = useRef()
+const Message = ({ message, remove, id }) => {
+    const ref = useRef()
 
     useEffect(() => {
-        setTimeout(() => alertDiv.current.classList.add('show'), 40)
+        let interval1 = setTimeout(() => {
+            ref.current.classList.add('show')
+        }, 30)
 
-        let interval = setTimeout(() => {
-            alertDiv.current.classList.remove('show')
-            setTimeout(() => removeMessage(index), 40)
+        let interval2 = setTimeout(() => {
+            remove(id)
         }, 2000)
 
-        return () => clearTimeout(interval)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        return () => {
+            clearTimeout(interval1)
+            clearTimeout(interval2)
+        }
     }, [])
 
     return (
-        <div className="alert-msg" ref={alertDiv}>
+        <div className="alert-msg" ref={ref}>
             <p>{message}</p>
+        </div>
+    )
+}
+
+// eslint-disable-next-line react/prop-types
+export default function Alert() {
+    const messages = useSelector((state) => state.alert)
+    const dispatch = useDispatch()
+
+    const removeAlertMessage = useCallback((id) => {
+        dispatch(remove(id))
+    }, [dispatch])
+
+    return (
+        <div className="alert-messages">
+            {
+                messages.map((alert) => (
+                    <Message
+                        key={alert.id}
+                        message={alert.message}
+                        id={alert.id}
+                        remove={removeAlertMessage}
+                    />
+                ))
+            }
         </div>
     )
 }

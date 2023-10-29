@@ -1,17 +1,17 @@
 import ReactDOM from 'react-dom/client'
-import {
-    createBrowserRouter,
-    RouterProvider,
-} from "react-router-dom"
+import { createBrowserRouter, RouterProvider } from "react-router-dom"
+
+import { Provider } from 'react-redux';
+import { store } from './store';
 
 import "./index.css"
-import { AuthProvider } from './contexts/AuthContext';
-import { AlertProvider } from './contexts/AlertContext'
+
 import Home from './pages/Home';
 import Result from './pages/Result';
 import Profile from './pages/Profile';
 import Auth from './pages/Auth'
 import ErrorPage from './pages/ErrorPage';
+import Alert from './components/Alert';
 
 const router = createBrowserRouter([
     {
@@ -35,10 +35,9 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     // <React.StrictMode>
-    <AuthProvider>
-        <AlertProvider>
-            <RouterProvider router={router} />
-        </AlertProvider>
-    </AuthProvider>
+    <Provider store={store}>
+        <Alert />
+        <RouterProvider router={router} />
+    </Provider>
     // </React.StrictMode>,
 )

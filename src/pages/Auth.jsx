@@ -1,21 +1,33 @@
-import { useEffect, useState } from 'react'
-import Header from '../components/Header'
-import './Auth.css'
-import { useAlert } from '../contexts/AlertContext'
-import { getDataFromLocalStorage, setDataToLocalStorage } from '../utils'
-import { useAuth } from '../contexts/AuthContext'
+import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+
+import { alert } from '../store/Alert'
+import { signIn } from '../store/Auth'
+import { create } from '../store/Account'
+
+import Header from '../components/Header'
+import { getDataFromLocalStorage, setDataToLocalStorage } from '../utils'
+
+import './Auth.css'
 
 export default function Auth() {
-    const show = useAlert()
+    const dispatch = useDispatch()
     const history = useLocation()
     const navigate = useNavigate()
-    const { signInUser, user } = useAuth()
+
+    const user = useSelector(state => state.auth)
+    const account = useSelector(state => state.account)
+
     const [type, setType] = useState('signin')
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
     const [pass, setPass] = useState('')
     const [cpass, setCPass] = useState('')
+
+    const show = useCallback((message) => {
+        dispatch(alert(message))
+    }, [dispatch])
 
     const changeType = (e, type) => {
         e.preventDefault()
@@ -40,27 +52,30 @@ export default function Auth() {
         } else if (cpass != pass && !isSignInPage) {
             show('Confirm Password does not matched.')
         } else if (isSignInPage) {
-            const users = getDataFromLocalStorage('userDummy', []);
-            const user = users[users.findIndex(el => el.email == email)];
+            const user = account[account.findIndex(el => el.email == email)];
 
             if (!user) {
                 show('Account is not found.')
             } else if (user.pass != pass) {
                 show('Password does not matched.')
             } else {
-                signInUser(user.name, email, pass, user.createdAt)
+                dispatch(signIn({
+                    name: user.name,
+                    email,
+                    password: pass,
+                    createdAt: user.createdAt
+                }))
+
                 show('Sign in successfully!')
                 navigate('/', { replace: true })
             }
         } else {
-            const users = getDataFromLocalStorage('userDummy', []);
-            const user = users[users.findIndex(el => el.email == email)];
+            const user = account[account.findIndex(el => el.email == email)];
 
             if (user) {
                 show('Email address is already taken.')
             } else {
-                users.push({ name, email, pass, createdAt: new Date().getTime() })
-                setDataToLocalStorage('userDummy', users)
+                dispatch(create({ name, email, pass, createdAt: new Date().getTime() }))
 
                 setName('')
                 setEmail('')
