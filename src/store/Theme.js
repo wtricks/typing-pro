@@ -6,7 +6,7 @@ export const Theme = createSlice({
     initialState: window.localStorage.getItem("__tp_theme") || 'light',
     reducers: {
         setTheme: (_state, { payload = 'light' }) => {
-            setDataToLocalStorage('__tp_theme', payload)
+             window.localStorage.setItem('__tp_theme', payload)
             document.body.classList.remove(payload == 'light' ? 'dark' : 'light')
             document.body.classList.add(payload)
             return payload
