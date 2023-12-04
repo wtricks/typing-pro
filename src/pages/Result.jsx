@@ -1,43 +1,42 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams, useLocation, useNavigate } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-
-import { alert } from '../store/Alert'
-import { store } from '../store'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { getDoc, doc } from 'firebase/firestore'
+import { useDispatch } from 'react-redux'
 
 import Graph from '../components/Graph'
 import Header from '../components/Header'
+import { auth, db } from '../firebase'
+import { alert } from '../store/Alert'
+
 
 import './Result.css'
 
 export default function Result() {
     const dispatch = useDispatch()
-    const [search] = useSearchParams()
     const history = useLocation()
     const navigate = useNavigate()
 
-    const [data] = useState(() => {
-        const dummy = store.getState().history
-        const dataId = search.get('time');
-        const index = dummy.findIndex(h => h.time == dataId);
-
-        if (index == -1) {
-            dispatch(alert('Data with id `' + dataId + '` is not found.'))
-            return { graph: [] }
-        }
-
-        return dummy[index]
-    })
+    const { id } = useParams()
+    const [data, setData] = useState({})
 
     useEffect(() => {
-        if (data.graph.length == 0) {
-            if (history.key !== 'default') {
-                window.history.back()
-            } else {
-                navigate('/', { replace: true })
-            }
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        getDoc(doc(db, 'history', id))
+            .then(doc => {
+                if (doc.exists()) {
+                    setData({
+                        ...doc.data(),
+                        graph: JSON.parse(doc.data().graph)
+                    })
+
+                    if (!auth.currentUser) {
+                        dispatch(alert("Sign up now, so you can view your scores anytime."))
+                    }
+                } else if (history.key != 'default') {
+                    navigate(-1)
+                } else {
+                    navigate('/', { replace: true })
+                }
+            })
     }, [])
 
     return (
@@ -45,24 +44,29 @@ export default function Result() {
             <Header />
             <div className="container">
                 <div className="inner lp">
-                    <Graph graphData={data.graph} />
+                    <Graph graphData={data.graph || []} />
                 </div>
                 <div className="inner rp rps card">
                     <h2>Result</h2>
 
-                    <h3>Gross WPM</h3>
-                    <p>{Math.round((data.totalChar / 5) / (data.taken / 60))}</p>
+                    {data.totalChar && (
+                        <>
+                            <h3>Gross WPM</h3>
+                            <p>{Math.round((data.totalChar / 5) / (data.taken / 60))}</p>
 
-                    <h3>Net WPM</h3>
-                    <p>{Math.round(((data.totalChar - (data.totalChar - data.totalCorrectChar)) / 5) / (data.taken / 60))}</p>
+                            <h3>Net WPM</h3>
+                            <p>{Math.round(((data.totalChar - (data.totalChar - data.totalCorrectChar)) / 5) / (data.taken / 60))}</p>
 
-                    <h3>Accuracy</h3>
-                    <p>{Math.round((data.totalCorrectChar / data.totalChar) * 100)}</p>
+                            <h3>Accuracy</h3>
+                            <p>{Math.round((data.totalCorrectChar / data.totalChar) * 100)}</p>
 
-                    <h3>Characters</h3>
-                    <p>{data.totalCorrectChar}/{data.totalInCorrectChar}/{data.totalChar - (data.totalCorrectChar + data.totalInCorrectChar)}/{data.totalChar}</p>
+                            <h3>Characters</h3>
+                            <p>{data.totalCorrectChar}/{data.totalInCorrectChar}/{data.totalChar - (data.totalCorrectChar + data.totalInCorrectChar)}/{data.totalChar}</p>
+                        </>
+                    )}
 
-                    <button type="button" onClick={() => window.history.back()}>
+
+                    <button type="button" onClick={() => navigate(-1)}>
                         Back to Previous Page
                     </button>
                 </div>

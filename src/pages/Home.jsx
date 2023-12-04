@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { generate } from 'random-words'
-import { useDispatch } from "react-redux";
 import { useNavigate } from 'react-router-dom'
-import { setHistory } from '../store/History'
+import { addDoc, collection } from 'firebase/firestore'
+
 import Header from '../components/Header'
+import { auth, db } from "../firebase";
 import "./Home.css"
 
 export default function Home() {
-    const dispatch = useDispatch()
     const navigate = useNavigate()
 
     const [config, setConfig] = useState([60, 50])
@@ -107,7 +107,7 @@ export default function Home() {
         setActive(input.current.value.length)
     }
 
-    const timeNowEnd = () => {
+    const timeNowEnd = async () => {
         let totalCorrectChar = 0;
         let totalInCorrectChar = 0;
         document.querySelectorAll('.inner.lp span').forEach((element) => {
@@ -120,17 +120,22 @@ export default function Home() {
 
         let totalChar = dummyText.current.length;
 
-        const dataId = new Date().getTime();
-
-        dispatch(setHistory({
-            graph: graph.current,
+        const data = {
+            graph: JSON.stringify(graph.current),
             totalCorrectChar,
             totalInCorrectChar,
             totalChar,
             taken: config[0],
-            time: dataId
-        }))
-        navigate("/result?time=" + dataId)
+            time: Date.now(),
+            createdBy: auth.currentUser?.uid
+        }
+
+        try {
+            const result = await addDoc(collection(db, 'history'), data)
+            navigate('result/' + result.id);
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     useEffect(() => {

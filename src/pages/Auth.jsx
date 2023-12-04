@@ -1,25 +1,24 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
+import { useLocation, useNavigate, NavLink, useParams } from 'react-router-dom'
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 
+import { auth } from '../firebase'
 import { alert } from '../store/Alert'
-import { signIn } from '../store/Auth'
-import { create } from '../store/Account'
+import { setUser } from '../store/user'
 
 import Header from '../components/Header'
-import { getDataFromLocalStorage, setDataToLocalStorage } from '../utils'
-
 import './Auth.css'
 
 export default function Auth() {
-    const dispatch = useDispatch()
+    const { type } = useParams()
     const history = useLocation()
     const navigate = useNavigate()
+    const dispatch = useDispatch()
 
-    const user = useSelector(state => state.auth)
-    const account = useSelector(state => state.account)
+    const user = useSelector(state => state.user)
 
-    const [type, setType] = useState('signin')
+    const [loading, setLoading] = useState(false)
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
     const [pass, setPass] = useState('')
@@ -29,17 +28,7 @@ export default function Auth() {
         dispatch(alert(message))
     }, [dispatch])
 
-    const changeType = (e, type) => {
-        e.preventDefault()
-        setName('')
-        setEmail('')
-        setPass('')
-        setCPass('')
-
-        setType(type)
-    }
-
-    const onSubmit = (e) => {
+    const onSubmit = async (e) => {
         const isSignInPage = type == 'signin';
         e.preventDefault();
 
@@ -49,52 +38,58 @@ export default function Auth() {
             show('Email address is required.')
         } else if (!pass) {
             show('Password is required.')
+        } else if (cpass.length < 6 && !isSignInPage) {
+            show('Weak Password, Its length should be more than 6.')
         } else if (cpass != pass && !isSignInPage) {
             show('Confirm Password does not matched.')
         } else if (isSignInPage) {
-            const user = account[account.findIndex(el => el.email == email)];
+            setLoading(true);
 
-            if (!user) {
-                show('Account is not found.')
-            } else if (user.pass != pass) {
-                show('Password does not matched.')
-            } else {
-                dispatch(signIn({
-                    name: user.name,
-                    email,
-                    password: pass,
-                    createdAt: user.createdAt
-                }))
-
-                show('Sign in successfully!')
-                navigate('/', { replace: true })
-            }
+            signInWithEmailAndPassword(auth, email, pass)
+                .then(() => {
+                    show('Sign in successfully!')
+                    navigate('/', { replace: true })
+                })
+                .catch(err => {
+                    if (err.code == 'auth/invalid-credential') {
+                        show("Invalid credential given.")
+                    } else {
+                        show("An error occured: " + err.code?.slice(5))
+                    }
+                })
+                .finally(() => setLoading(false))
         } else {
-            const user = account[account.findIndex(el => el.email == email)];
+            setLoading(true)
+            createUserWithEmailAndPassword(auth, email, pass, name)
+                .then((userCredential) => {
+                    updateProfile(userCredential.user, { displayName: name })
+                        .then(() => {
+                            dispatch(setUser({
+                                ...user,
+                                name: name,
+                            }))
+                        })
 
-            if (user) {
-                show('Email address is already taken.')
-            } else {
-                dispatch(create({ name, email, pass, createdAt: new Date().getTime() }))
-
-                setName('')
-                setEmail('')
-                setPass('')
-                setCPass('')
-                show('Signup successfully, Login now')
-            }
+                    show('Account created and logged in successfully.')
+                    navigate('/', { replace: true })
+                }).catch(err => {
+                    if (err.code == 'auth/email-already-in-use') {
+                        show("Email address is already taken.")
+                    } else {
+                        show("An error occured: " + err.code?.slice(5))
+                    }
+                }).finally(() => setLoading(false))
         }
     }
 
     useEffect(() => {
         if (user) {
             if (history.key !== 'default') {
-                window.history.back()
+                navigate(-1)
             } else {
                 navigate('/', { replace: true })
             }
-
-            show('You are already logged in.')
+            dispatch(alert('You have already logged in.'))
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
@@ -105,13 +100,12 @@ export default function Auth() {
             <div className="container">
                 <div className="inner lp auth card">
                     <div className="tabs">
-                        <a onClick={e => changeType(e, 'signin')} href="/auth/signin" title="Login to existing account." className={type == 'signin' ? 'active' : ''}>
+                        <NavLink to="/auth/signin" title="Login to existing account." className={({ isActive }) => isActive ? 'active' : ''}>
                             Sign in
-                        </a>
-
-                        <a onClick={e => changeType(e, 'signup')} href="/auth/signup" title="Create a new account." className={type == 'signup' ? 'active' : ''}>
+                        </NavLink>
+                        <NavLink to="/auth/signup" title="Create a new account." className={({ isActive }) => isActive ? 'active' : ''}>
                             Sign up
-                        </a>
+                        </NavLink>
                     </div>
 
                     <form onSubmit={onSubmit} action={"/auth/" + type} method='post'>
@@ -123,7 +117,7 @@ export default function Auth() {
 
                         {type == 'signup' && <input value={cpass} onChange={e => setCPass(e.target.value)} type="password" name="confirm password" id="cpass" placeholder='Confirm Password' />}
 
-                        <button type="submit">{type == 'signin' ? 'Sign in' : 'Sign up'}</button>
+                        <button disabled={loading} type="submit">{type == 'signin' ? 'Sign in' : 'Sign up'}</button>
                     </form>
                 </div>
             </div>

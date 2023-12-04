@@ -1,24 +1,26 @@
 import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { signOut } from 'firebase/auth'
+
+import { auth } from '../firebase'
+
 import { setTheme } from '../store/Theme'
-import { signOut } from '../store/Auth'
 import { alert } from '../store/Alert'
 
 export default function Header() {
     const navigate = useNavigate()
     const location = useLocation()
     const dispatch = useDispatch()
-    const user = useSelector((state) => state.auth)
+    const user = useSelector((state) => state.user)
     const theme = useSelector((state) => state.theme)
 
     useEffect(() => {
-        console.log(user)
         document.body.classList.add(theme)
     }, [])
 
     const onProfileButtonClick = () => {
-        const page = user ? '/profile' : '/auth'
+        const page = user ? '/profile' : '/auth/signin'
         if (location.pathname == page) {
             return
         }
@@ -31,10 +33,11 @@ export default function Header() {
         dispatch(alert((theme == 'light' ? 'dark' : 'light') + ' mode'))
     }
 
-    const onLogout = () => {
-        dispatch(signOut())
-        navigate('/', { replace: true })
+    const onLogout = async () => {
+        await signOut(auth);
+
         dispatch(alert('Logout successfully!'))
+        navigate('/', { replace: true })
     }
 
     return (

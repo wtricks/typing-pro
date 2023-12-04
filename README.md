@@ -22,6 +22,7 @@ pnpm run dev
 - __React Redux__
 - __React Router Dom__
 - __ChartJs__
+- __Firebase__
 
 # See Demo
 
