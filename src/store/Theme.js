@@ -3,7 +3,7 @@ import { getDataFromLocalStorage, setDataToLocalStorage } from '../utils'
 
 export const Theme = createSlice({
     name: 'theme',
-    initialState: window.localStorage.setItem("__tp_theme") || 'light',
+    initialState: window.localStorage.getItem("__tp_theme") || 'light',
     reducers: {
         setTheme: (_state, { payload = 'light' }) => {
             setDataToLocalStorage('__tp_theme', payload)
