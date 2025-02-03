@@ -126,7 +126,7 @@ export default function Home() {
             totalInCorrectChar,
             totalChar,
             taken: config[0],
-            time: Date.now(),
+            time: new Date(),
             createdBy: auth.currentUser?.uid
         }
 
